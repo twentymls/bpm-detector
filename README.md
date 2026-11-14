@@ -12,6 +12,31 @@ Besides the tempo, the app shows:
 
 Supported files: WAV, AIFF, MP3, FLAC, M4A (AAC-LC / ALAC) and OGG Vorbis, at least 6 seconds long.
 
+## Download
+
+Ready-made builds are attached to each [release](../../releases). The builds are not signed with
+a paid developer certificate, so each system asks for confirmation the first time.
+
+### macOS (Apple Silicon and Intel)
+
+1. Unzip `BPM-Detector-macOS-universal.zip`.
+2. Move `BPM Detector.app` to `/Applications`.
+3. If macOS refuses to open it, go to *System Settings → Privacy & Security* and choose
+   **Open Anyway**. Alternatively, run:
+
+   ```sh
+   xattr -dr com.apple.quarantine "/Applications/BPM Detector.app"
+   ```
+
+### Windows
+
+Run `BPM-Detector-Windows-x86_64.exe`. If SmartScreen appears, choose **More info → Run anyway**.
+
+### Linux (x86_64)
+
+Extract `BPM-Detector-Linux-x86_64.tar.gz` and run `bpm-detector`. It needs an X11 or Wayland
+desktop.
+
 ## How it works
 
 1. The audio is decoded with [Symphonia](https://github.com/pdeljanov/Symphonia) and mixed down to mono.
@@ -37,8 +62,8 @@ Supported files: WAV, AIFF, MP3, FLAC, M4A (AAC-LC / ALAC) and OGG Vorbis, at le
 ## Build
 
 You need a stable [Rust toolchain](https://rustup.rs) on every platform. The app was built and
-tested on macOS (Apple Silicon). The Windows and Linux targets are verified to compile
-(`cargo check`) but have not been run.
+tested by hand on macOS (Apple Silicon). On Windows and Linux, the release workflow builds it and
+runs the test suite, but nobody has tried the app by hand there yet.
 
 ### macOS
 
@@ -57,6 +82,11 @@ The script:
 - installs it in `/Applications`, replacing any previous copy.
 
 To keep it in the Dock, drag it there from `/Applications`.
+
+Options:
+
+- `--universal`: build one binary for both Apple Silicon and Intel Macs.
+- `--no-install`: leave the app in `target/bundle` without installing it.
 
 ### Windows
 
@@ -110,3 +140,19 @@ cargo run --release --example analyze -- path/to/track.wav another.mp3
 - Run the tests in release mode: they synthesize several minutes of audio.
 - The `analyze` example prints the tempo with five decimals, plus confidence, stability and
   timing.
+
+## Releasing
+
+Bump `version` in `Cargo.toml` and `CFBundleShortVersionString` in `packaging/Info.plist`, then
+push a tag:
+
+```sh
+git tag -a v1.0.1 -m "BPM Detector 1.0.1"
+git push origin v1.0.1
+```
+
+`.github/workflows/release.yml` then:
+
+- builds the app on macOS (universal), Windows and Linux;
+- runs the tests on all three;
+- publishes a GitHub release with the three builds attached.

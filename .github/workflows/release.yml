@@ -1,0 +1,67 @@
+# Builds the app on macOS, Windows and Linux and, for a `v*` tag, publishes a GitHub Release
+# with the three builds attached. Run it by hand (workflow_dispatch) to only build.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  macos:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+      - run: cargo test --release
+      - run: ./scripts/bundle.sh --universal --no-install
+      - run: ditto -c -k --keepParent "target/bundle/BPM Detector.app" BPM-Detector-macOS-universal.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: BPM-Detector-macOS-universal.zip
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo test --release
+      - run: cargo build --release
+      - run: Copy-Item target/release/bpm-detector.exe BPM-Detector-Windows-x86_64.exe
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: BPM-Detector-Windows-x86_64.exe
+
+  linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: sudo apt-get update && sudo apt-get install -y libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libssl-dev
+      - run: cargo test --release
+      - run: cargo build --release
+      - run: tar -czf BPM-Detector-Linux-x86_64.tar.gz -C target/release bpm-detector
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: BPM-Detector-Linux-x86_64.tar.gz
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [macos, windows, linux]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/* --repo "$GITHUB_REPOSITORY" --title "BPM Detector $GITHUB_REF_NAME" --generate-notes
