@@ -14,13 +14,14 @@ Supported files: WAV, AIFF, MP3, FLAC, M4A (AAC-LC / ALAC) and OGG Vorbis, at le
 
 ## Download
 
-Ready-made builds are attached to each [release](../../releases). The builds are not signed with
-a paid developer certificate, so each system asks for confirmation the first time.
+Ready-made builds are attached to each [release](../../releases). Each package contains the app,
+`LICENSE` and `THIRD_PARTY_LICENSES.txt`. The builds are not signed with a paid developer
+certificate, so each system asks for confirmation the first time.
 
 ### macOS (Apple Silicon and Intel)
 
 1. Unzip `BPM-Detector-macOS-universal.zip`.
-2. Move `BPM Detector.app` to `/Applications`.
+2. Move `BPM Detector.app` from the `BPM Detector` folder to `/Applications`.
 3. If macOS refuses to open it, go to *System Settings → Privacy & Security* and choose
    **Open Anyway**. Alternatively, run:
 
@@ -30,12 +31,13 @@ a paid developer certificate, so each system asks for confirmation the first tim
 
 ### Windows
 
-Run `BPM-Detector-Windows-x86_64.exe`. If SmartScreen appears, choose **More info → Run anyway**.
+Unzip `BPM-Detector-Windows-x86_64.zip` and run `BPM Detector.exe`. If SmartScreen appears,
+choose **More info → Run anyway**.
 
 ### Linux (x86_64)
 
-Extract `BPM-Detector-Linux-x86_64.tar.gz` and run `bpm-detector`. It needs an X11 or Wayland
-desktop.
+Extract `BPM-Detector-Linux-x86_64.tar.gz` and run `bpm-detector/bpm-detector`. It needs an X11
+or Wayland desktop.
 
 ## How it works
 
@@ -155,4 +157,16 @@ git push origin v1.0.1
 
 - builds the app on macOS (universal), Windows and Linux;
 - runs the tests on all three;
-- publishes a GitHub release with the three builds attached.
+- generates `THIRD_PARTY_LICENSES.txt` with [cargo-about](https://github.com/EmbarkStudios/cargo-about)
+  (configured in `packaging/about.toml`);
+- publishes a GitHub release with the three packages attached.
+
+The cargo-about step fails if a new dependency brings in a license that is not listed in
+`packaging/about.toml`. Check that license before adding it to the list.
+
+## License
+
+BPM Detector is released under the [MIT license](LICENSE). The release builds also include
+third-party components (egui, Symphonia, rustfft and their dependencies) under their own
+licenses: MIT, Apache-2.0, MPL-2.0, BSD, Zlib and others. Their texts are in
+`THIRD_PARTY_LICENSES.txt` inside each package.

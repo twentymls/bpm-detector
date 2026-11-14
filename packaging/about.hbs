@@ -1,0 +1,19 @@
+Third-party software in BPM Detector
+====================================
+
+BPM Detector is released under the MIT license (see LICENSE). The executable also contains the
+open-source components listed below, each under its own license. The source code of every
+component is available at the address next to its name.
+
+{{#each licenses~}}
+--------------------------------------------------------------------------------
+{{{name}}} ({{{id}}})
+
+Used by:
+{{#each used_by~}}
+- {{{crate.name}}} {{{crate.version}}}: {{#if crate.repository}}{{{crate.repository}}}{{else}}https://crates.io/crates/{{{crate.name}}}{{/if}}
+{{/each}}
+
+{{{text}}}
+
+{{/each~}}
